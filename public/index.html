@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>jjawesome-webassembly-encrypted</title>
+    <script src="assets/wasm_exec.js"></script>
+</head>
+<body>
+<script>
+    let doc = `
+  description the example like to help the web to encrypt the params before fetch requests.
+because of the encrypt program has been compile wasm,so other one is difficulty to resolve the request params.
+why I use it ? if your website want to avoid the Web crawler,so use It,but some program like selenium can skip over it.
+how to use.
+call function <beforeSend(params)>.
+the beforeSend has been register on window object.
+then send xhr request,the request content has been encrypted.
+the backend program should decrypt the request content.
+after decrypted the content like this.
+ let decrypted = {
+     "json":{
+         "params1":"123",
+         "params2":"456"
+     },
+     "time":1649400257
+ }`
+    alert(doc);
+    function afterMountWebAssembly()
+    {
+        //程序入口
+        let data={
+            "params1":"123",
+            "params2":"456"
+        }
+        let encryptedData=beforeSend(data);
+        alert("加密成功"+encryptedData)
+    }
+    window.onload=function (){
+        let go = new Go();
+        WebAssembly.instantiateStreaming(fetch("websafe.wasm"), go.importObject)
+            .then((result) => {
+                go.run(result.instance)
+                afterMountWebAssembly()
+            }).catch(function (err){
+                if (err.toString().indexOf("application/wasm")!==-1){
+                    let doc=`
+some error occur!!!
+make sure the web server add header like 'Content-Type application/wasm
+openresty config like this
+
+location /webassembly/websafe.wasm {
+  more_set_headers  "Content-Type application/wasm";
+}
+                    `
+                    alert(doc)
+                }
+                else {
+                    alert(err)
+                }
+                console.log(err)
+
+        });
+    };
+</script>
+</body>
+</html>
